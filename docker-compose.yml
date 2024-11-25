@@ -1,0 +1,17 @@
+services:
+  rock-paper-scissors:
+    image: thyrail/rock-paper-scissors:latest
+    container_name: rps-app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.rps.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.rps.entrypoints=websecure"
+      - "traefik.http.routers.rps.tls.certresolver=le"
+      - "traefik.http.services.rps.loadbalancer.server.port=${APP_PORT}"
+    networks:
+      - proxy
+    restart: always
+
+networks:
+  proxy:
+    external: true
