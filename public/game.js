@@ -34,4 +34,5 @@ document.addEventListener('DOMContentLoaded', () =>
         }
         return 'Computer wins!';
     }
+
 });
