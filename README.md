@@ -3,7 +3,7 @@
 A small, web-based **rock-paper-scissors game** that can be played against the computer.  
 The application runs in a **Docker container** and can optionally be configured with **Traefik** as a reverse proxy.
 
-[Example:](https://rps.thyrail.de/)
+[rps.thyrail.de:](https://rps.thyrail.de/)
 
 ## 🚀 Features
 
