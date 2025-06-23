@@ -1,28 +1,266 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rock Paper Scissors</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Schere, Stein, Papier - Modern</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --container-bg: #16213e;
+            --primary-color: #0f3460;
+            --secondary-color: #e94560;
+            --font-color: #dcdcdc;
+            --gradient-start: #ff00ff;
+            --gradient-end: #00ffff;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            color: var(--font-color);
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .game-container {
+            background-color: var(--container-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end), var(--gradient-start));
+            background-size: 200% auto;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: text-gradient-animation 5s linear infinite;
+            margin-bottom: 30px;
+        }
+
+        @keyframes text-gradient-animation {
+            to {
+                background-position: 200% center;
+            }
+        }
+        
+        .choices {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .choice-btn {
+            background-color: var(--primary-color);
+            color: var(--font-color);
+            border: 2px solid var(--secondary-color);
+            border-radius: 50%;
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            /* Die Grösse der Emojis wird hier gesteuert */
+            font-size: 3rem; 
+        }
+        
+        .choice-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(233, 69, 96, 0.4);
+        }
+
+        .choice-btn:active {
+            transform: translateY(0) scale(1);
+        }
+        
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple-animation 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        .results {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            min-height: 100px;
+        }
+        
+        .results p {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeIn 0.5s forwards;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        #result.win {
+            color: #4ade80;
+            font-weight: bold;
+        }
+        #result.lose {
+            color: #f87171;
+            font-weight: bold;
+        }
+        #result.tie {
+            color: #60a5fa;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container">
-        <h1>Rock Paper Scissors</h1>
-        <div class="buttons">
-            <button id="rock">Rock</button>
-            <button id="paper">Paper</button>
-            <button id="scissors">Scissors</button>
+
+    <div class="game-container">
+        <h1>Schere, Stein, Papier</h1>
+        
+        <div class="choices">
+            <button class="choice-btn" id="rock" title="Stein">✊</button>
+            <button class="choice-btn" id="paper" title="Papier">✋</button>
+            <button class="choice-btn" id="scissors" title="Schere">✌️</button>
         </div>
-        <div class="results">
-            <p id="player-choice">You chose: -</p>
-            <p id="computer-choice">Computer chose: -</p>
-            <p id="result">Result: -</p>
+        
+        <div class="results" id="results-container">
         </div>
     </div>
-    <script src="game.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const choices = ['rock', 'paper', 'scissors'];
+            const choiceNames = {
+                rock: 'Stein',
+                paper: 'Papier',
+                scissors: 'Schere'
+            };
+            const resultsContainer = document.getElementById('results-container');
+
+            document.getElementById('rock').addEventListener('click', (e) => playGame('rock'));
+            document.getElementById('paper').addEventListener('click', (e) => playGame('paper'));
+            document.getElementById('scissors').addEventListener('click', (e) => playGame('scissors'));
+            
+            const buttons = document.querySelectorAll('.choice-btn');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const target = e.target.closest('.choice-btn');
+                    if (!target) return;
+
+                    const rect = target.getBoundingClientRect();
+                    const circle = document.createElement('span');
+                    const diameter = Math.max(target.clientWidth, target.clientHeight);
+                    const radius = diameter / 2;
+
+                    circle.style.width = circle.style.height = `${diameter}px`;
+                    circle.style.left = `${e.clientX - rect.left - radius}px`;
+                    circle.style.top = `${e.clientY - rect.top - radius}px`;
+                    circle.classList.add('ripple');
+                    
+                    const ripple = target.getElementsByClassName('ripple')[0];
+                    if (ripple) {
+                        ripple.remove();
+                    }
+
+                    target.appendChild(circle);
+                });
+            });
+
+            function playGame(playerChoice) {
+                const computerChoice = choices[Math.floor(Math.random() * choices.length)];
+                const result = determineWinner(playerChoice, computerChoice);
+                displayResults(playerChoice, computerChoice, result);
+            }
+
+            function determineWinner(player, computer) {
+                if (player === computer) return 'tie';
+                if (
+                    (player === 'rock' && computer === 'scissors') ||
+                    (player === 'paper' && computer === 'rock') ||
+                    (player === 'scissors' && computer === 'paper')
+                ) {
+                    return 'win';
+                }
+                return 'lose';
+            }
+
+            function displayResults(player, computer, result) {
+                resultsContainer.innerHTML = '';
+
+                const playerChoiceText = `Du hast gewählt: <strong>${choiceNames[player]}</strong>`;
+                const computerChoiceText = `Computer hat gewählt: <strong>${choiceNames[computer]}</strong>`;
+
+                let resultText = '';
+                let resultClass = result;
+
+                switch (result) {
+                    case 'win':
+                        resultText = '🎉 Du gewinnst!';
+                        break;
+                    case 'lose':
+                        resultText = '🤖 Computer gewinnt!';
+                        break;
+                    case 'tie':
+                        resultText = '🤝 Unentschieden!';
+                        break;
+                }
+
+                const playerElem = document.createElement('p');
+                playerElem.innerHTML = playerChoiceText;
+
+                const computerElem = document.createElement('p');
+                computerElem.innerHTML = computerChoiceText;
+
+                const resultElem = document.createElement('p');
+                resultElem.innerHTML = resultText;
+                resultElem.id = 'result';
+                resultElem.className = resultClass;
+
+                setTimeout(() => resultsContainer.appendChild(playerElem), 0);
+                setTimeout(() => resultsContainer.appendChild(computerElem), 150);
+                setTimeout(() => resultsContainer.appendChild(resultElem), 300);
+            }
+        });
+    </script>
 </body>
 
 </html>
