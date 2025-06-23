@@ -1,0 +1,50 @@
+name: Build, Push, and Deploy
+
+on:
+  push:
+    branches:
+      - release
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Application Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: thyrail/rock-paper-scissors
+          tags: |
+            type=sha,prefix=,format=short
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Update Kubernetes deployment.yaml
+        run: |
+          # Wir verwenden sed, um die image-Zeile in unserer deployment.yaml zu ersetzen
+          sed -i "s|image:.*|image: thyrail/rock-paper-scissors:${{ steps.meta.outputs.version }}|g" kubernetes/deployment.yaml
+
+      - name: Commit and push manifest changes
+        run: |
+          git config --global user.name 'GitHub Action Bot'
+          git config --global user.email 'bot@github.com'
+          git add kubernetes/deployment.yaml
+          git commit -m "Update image tag for rps-app to ${{ steps.meta.outputs.version }}"
+          git push

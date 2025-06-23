@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rps-app-deployment
+  namespace: rps-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rps-app
+  template:
+    metadata:
+      labels:
+        app: rps-app
+    spec:
+      containers:
+      - name: rock-paper-scissors
+        image: thyrail/rock-paper-scissors:latest 
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - secretRef:
+            name: rps-config-secret
