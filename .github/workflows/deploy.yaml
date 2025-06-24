@@ -1,4 +1,4 @@
-name: Build, Push, and Deploy
+name: Build, Push, and Deploy to Kubernetes
 
 on:
   push:
@@ -37,7 +37,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
 
   update-manifest:
-    name: Update Kubernetes Manifest in Config Repo
+    name: Update Kubernetes Manifest
     needs: build-and-push
     runs-on: ubuntu-latest
 
@@ -53,7 +53,7 @@ jobs:
         run: |
           # Der Tag wird aus dem vorherigen Job übergeben
           NEW_TAG="thyrail/rock-paper-scissors:${{ needs.build-and-push.image_tag }}"
-          # Wir verwenden 'sed' um die image-Zeile zu ersetzen
+          # Wir verwenden 'sed', um die image-Zeile zu finden und zu ersetzen
           sed -i "s|image:.*|image: ${NEW_TAG}|g" apps/rock-paper-scissors/deployment.yaml
 
       - name: Commit and push manifest changes
@@ -61,7 +61,7 @@ jobs:
           git config --global user.name 'GitHub Action Bot'
           git config --global user.email 'bot@github.com'
           git add apps/rock-paper-scissors/deployment.yaml
-          # Wir committen nur, wenn es eine echte Änderung gibt
-          git diff --staged --quiet || git commit -m "Update rps-app image to ${{ needs.build-and-push.image_tag }}"
+          # Wir committen nur, wenn es eine echte Änderung gab
+          git diff --staged --quiet || git commit -m "Deploy new image for rps-app: ${{ needs.build-and-push.image_tag }}"
           # Wir pushen die Änderung zurück in den master-Branch des Konfig-Repos
           git push origin master
