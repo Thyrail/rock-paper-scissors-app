@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Schere, Stein, Papier - Modern</title>
+    <title>Rock, Paper, Scissors</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -84,7 +84,6 @@
             justify-content: center;
             align-items: center;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            /* Die Grösse der Emojis wird hier gesteuert */
             font-size: 3rem; 
         }
         
@@ -154,12 +153,12 @@
 <body>
 
     <div class="game-container">
-        <h1>Schere, Stein, Papier</h1>
+        <h1>Rock - Paper - Scissors</h1>
         
         <div class="choices">
-            <button class="choice-btn" id="rock" title="Stein">✊</button>
-            <button class="choice-btn" id="paper" title="Papier">✋</button>
-            <button class="choice-btn" id="scissors" title="Schere">✌️</button>
+            <button class="choice-btn" id="rock" title="Rock">✊</button>
+            <button class="choice-btn" id="paper" title="Paper">✋</button>
+            <button class="choice-btn" id="scissors" title="Scissors">✌️</button>
         </div>
         
         <div class="results" id="results-container">
@@ -169,11 +168,6 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const choices = ['rock', 'paper', 'scissors'];
-            const choiceNames = {
-                rock: 'Stein',
-                paper: 'Papier',
-                scissors: 'Schere'
-            };
             const resultsContainer = document.getElementById('results-container');
 
             document.getElementById('rock').addEventListener('click', (e) => playGame('rock'));
@@ -226,21 +220,21 @@
             function displayResults(player, computer, result) {
                 resultsContainer.innerHTML = '';
 
-                const playerChoiceText = `Du hast gewählt: <strong>${choiceNames[player]}</strong>`;
-                const computerChoiceText = `Computer hat gewählt: <strong>${choiceNames[computer]}</strong>`;
+                const playerChoiceText = `You chose: <strong>${player}</strong>`;
+                const computerChoiceText = `Computer chose: <strong>${computer}</strong>`;
 
                 let resultText = '';
                 let resultClass = result;
 
                 switch (result) {
                     case 'win':
-                        resultText = '🎉 Du gewinnst!';
+                        resultText = '🎉 You win!';
                         break;
                     case 'lose':
-                        resultText = '🤖 Computer gewinnt!';
+                        resultText = '🤖 Computer wins!';
                         break;
                     case 'tie':
-                        resultText = '🤝 Unentschieden!';
+                        resultText = '🤝 It\'s a tie!';
                         break;
                 }
 
