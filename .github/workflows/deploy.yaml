@@ -1,4 +1,4 @@
-name: Build, Push, and Deploy to Kubernetes
+name: Build, Push, and Deploy
 
 on:
   push:
@@ -6,12 +6,9 @@ on:
       - release
 
 jobs:
-  build-and-push:
-    name: Build and Push Docker Image
+  build-and-deploy:
+    name: Build, Push and Deploy
     runs-on: ubuntu-latest
-    outputs:
-      image_tag: ${{ steps.meta.outputs.version }}
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -22,42 +19,33 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract metadata for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: thyrail/rock-paper-scissors
-          tags: type=sha,prefix=,format=short
-
       - name: Build and push Docker image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          tags: thyrail/rock-paper-scissors:${{ github.sha }}
 
-  update-manifest:
-    name: Update Kubernetes Manifest
-    needs: build-and-push
-    runs-on: ubuntu-latest
-
-    steps:
       - name: Checkout k8s-config repo
         uses: actions/checkout@v4
         with:
-          repository: Thyrail/thyrail-k8s-config 
+          repository: Thyrail/thyrail-k8s-config
           ssh-key: ${{ secrets.CONFIG_REPO_DEPLOY_KEY }}
           ref: master
 
-      - name: Update deployment.yaml with new image tag
+      - name: Update deployment.yaml with new image digest
         run: |
-          NEW_TAG="thyrail/rock-paper-scissors:${{ needs.build-and-push.image_tag }}"
-          sed -i "s|image:.*|image: ${NEW_TAG}|g" apps/rock-paper-scissors/deployment.yaml
+          IMAGE_DIGEST="thyrail/rock-paper-scissors@${{ steps.build.outputs.digest }}"
+          echo "Updating to new image: ${IMAGE_DIGEST}"
+          sed -i 's|^\(\s*image:\s*\).*|\1'"${IMAGE_DIGEST}"'|' apps/rock-paper-scissors/deployment.yaml
+          echo "Content of deployment.yaml after update:"
+          cat apps/rock-paper-scissors/deployment.yaml
 
       - name: Commit and push manifest changes
         run: |
           git config --global user.name 'GitHub Action Bot'
           git config --global user.email 'bot@github.com'
           git add apps/rock-paper-scissors/deployment.yaml
-          git diff --staged --quiet || git commit -m "Deploy new image for rps-app: ${{ needs.build-and-push.image_tag }}"
+          git diff --staged --quiet || git commit -m "Deploy new image for rps-app: ${{ github.sha }}"
           git push origin master
