@@ -25,12 +25,12 @@ jobs:
         with:
           context: .
           push: true
-          tags: thyrail/rock-paper-scissors:${{ github.sha }}
+          tags: thyrail/rock-paper-scissors:latest,thyrail/rock-paper-scissors:${{ github.sha }}
 
       - name: Checkout k8s-config repo
         uses: actions/checkout@v4
         with:
-          repository: Thyrail/thyrail-k8s-config
+          repository: Thyrail/tyranid-synapse-config
           ssh-key: ${{ secrets.CONFIG_REPO_DEPLOY_KEY }}
           ref: master
 
